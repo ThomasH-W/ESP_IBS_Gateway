@@ -4,4 +4,8 @@
 .vscode/launch.json
 .vscode/ipch
 
+test
+lib
+
 .EspBattery_Thomas.h
+.gitignore
