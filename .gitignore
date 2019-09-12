@@ -7,5 +7,6 @@
 test
 lib
 
-.EspBattery_Thomas.h
+include/EspBattery_Thomas.h
+
 .gitignore
