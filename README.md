@@ -10,9 +10,14 @@ In der passiven Phase kommt man somit auf ca. 3mA.
 Das Modul soll als Basis für weitere Sensoren dienen, z.b. Ultraschallmessung des Frischwassertanks im Wohnmobil.
 Somit entfällt die Verlegung von Daten- oder Steuerleitungen.
 
-MQTT erlautb eine asynchrone Anbindung, so dass die zentrale Bedieneinheit sich die Daten abholen kann, wenn sie es braucht.
+MQTT erlaubt eine asynchrone Anbindung, so dass die zentrale Bedieneinheit sich die Daten abholen kann, wenn sie es braucht.
 Weiterhin lassen sich die Nachrichten im MQTT-Broker abgreifen, um das System zu analysieren.
 
 ToDo:
   Das Modul soll sich drei WLAN-Netzwerke merken.
   Damit könnten sich die Sensoren mit dem Heimnetzwerk verbinden und die Daten zu Hause ohne Bedieneinheit ausgelesen werden.
+
+Hinweis:
+  Aufgrund der Länger der MQTT nachricht, muss in PubSubClient.h die package size auf 250 gesetzt werden.
+  #define MQTT_MAX_PACKET_SIZE 250
+  
