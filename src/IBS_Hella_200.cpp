@@ -1,13 +1,14 @@
 #include <arduino.h>
 #include <SoftwareSerial.h>
+#include <IBS_Hella_200.h>
 
 // LIN serial Interface
-int serSpeed = 19200;   // speed LIN
-int breakDuration = 13; // number of bits break signal
+int serSpeed = LIN_SERIAL_SPEED;    // speed LIN
+int breakDuration = LIN_BREAK_BITS; // number of bits break signal
 
-int linCSPin = 2; // CS Pin
-int txPin1 = D6;  // TX Pin LIN serial
-int rxPin1 = D7;  // RX Pin LIN serial
+int linCSPin = PIN_MPC_CS; // CS Pin
+int txPin1 = PIN_MPC_TX;   // TX Pin LIN serial
+int rxPin1 = PIN_MPC_RX;   // RX Pin LIN serial
 
 SoftwareSerial linSerial(rxPin1, txPin1); // RX, TX
 //SoftwareSerial linSerial(rxPin1, txPin1, false, 128);
@@ -21,23 +22,6 @@ byte LinMessage[9] = {0};
 byte LinMessageA[200] = {0};
 boolean linSerialOn = 0;
 
-/*
-  Der Code nutzt Sensor 1. Für Sensor 2 müssen einfach andere Frame ID´s genutzt werden. 
-  Hier ist die entsprechende Übersetzungsliste:
-
-  Frame ID Typ 1   | 0x11 |   | 0x21 |   | 0x22 |   | 0x23 |   | 0x24 |   | 0x25 |   | 0x26
-  Frame ID Typ 2   | 0x12 |   | 0x27 |   | 0x28 |   | 0x29 |   | 0x2A |   | 0x2B |   | 0x2C
-  */
-
-#define IBS_FRM_tb1 0 // 0x12
-#define IBS_FRM_tb2 1 // 0x27
-#define IBS_FRM_CUR 2 // 0x28
-#define IBS_FRM_ERR 3 // 0x29
-#define IBS_FRM_tb3 4 // 0x2A
-#define IBS_FRM_SOx 5 // 0x2B
-#define IBS_FRM_CAP 6 // 0x2C
-
-#define IBS_SENSOR 0
 //                   0     1     2     3     4     5     6     7
 byte FrameID1[2][7] = {{0x11, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26},
                        {0x12, 0x27, 0x28, 0x29, 0x2A, 0x2B, 0x2C}};
@@ -49,14 +33,13 @@ byte LINChecksum(int nByte);
 byte addIDParity(byte linID);
 
 //-----------------------------------------------------------------------------------------------------------------
-void IBS_LIN_Setup()
+void IBS_LIN_Setup(int IBS_Sensor)
 {
     pinMode(linCSPin, OUTPUT); // CS Signal LIN Tranceiver
     digitalWrite(linCSPin, HIGH);
 
-    Serial.begin(115200);
     Serial.println("-------------------------------------------------------------");
-    Serial.println("> Starting module");
+    Serial.println("> Setting up serial LIN communication");
     Serial.flush();
     Serial.end();
     delay(50);
@@ -66,7 +49,7 @@ void IBS_LIN_Setup()
 }
 
 //-----------------------------------------------------------------------------------------------------------------
-void IBS_LIN_Read()
+void IBS_LIN_Read(char *json_message)
 {
     int soc;
     int soh;
@@ -109,6 +92,7 @@ void IBS_LIN_Read()
 
     AvCap = (float((LinMessageA[3] << 8) + LinMessageA[2])) / 10; //Dischargeable Capacity
     int Calib = bitRead(LinMessageA[5], 0);
+    remTime = 0;
 
     // Read Frame 4
     // readFrame(0x2A);
@@ -116,12 +100,22 @@ void IBS_LIN_Read()
 
     //soc = (AvCap/(80*soh/100))*100;         // Anzeige der eigentlichen Restkapazität im Battsymbol
 
+    //    int soc soh remTime    float Ubatt Ibatt Btemp AvCap
+
     // Output json String to serial
+    // %d signed int; %f float; %8.2f: 8 Stellen, 2 Nachkomma
+    sprintf(json_message, "{\"current\":{\"ubat\":\"%4.2f\",\"icurr\":\"%4.3f\",\"soc\":\"%d\",\"time\":\"%d\",\"avcap\":\"%3.1f\"},\"Akku\":{\"soh\":\"%d\",\"temp\":\"%4.2f\"}}",
+            Ubatt, Ibatt, soc, remTime, AvCap, soh, Btemp);
 
     if (outputSerial)
     {
         Serial.begin(115200);
         delay(100);
+
+        Serial.println("json_message:");
+        Serial.println(json_message);
+
+        /*
         Serial.print("{\"current\":{\"ubat\":\"");
         Serial.print(Ubatt, 2);
         Serial.print("\",\"icurr\":\"");
@@ -139,6 +133,7 @@ void IBS_LIN_Read()
         Serial.println("\"}}");
         Serial.flush();
         Serial.end();
+    */
         delay(100);
     }
 

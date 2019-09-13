@@ -5,7 +5,7 @@
 .vscode/ipch
 
 test
-lib
+lib/
 
 include/EspBattery_Thomas.h
 

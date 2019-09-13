@@ -18,6 +18,8 @@
  OTA: send OTA request to module ?
  MQTT: read sticky status of supply voltage: KL15/PowerGrid
 
+ JSON Validation:  https://jsonformatter.curiousconcept.com/
+
 Referenzen:
   http://www.rainer-rebhan.de/proj_FeuerM_OTA.html
     Sleep Jumper
@@ -46,6 +48,8 @@ Referenzen:
 #include "EspBattery.h"
 #endif
 
+#include <IBS_Hella_200.h>
+
 // const int sleepSeconds = 60 * 15;
 const int sleepSeconds = 60 * 1;
 
@@ -64,7 +68,7 @@ DNSServer dns;
 WiFiClient espClient;
 PubSubClient mqttClient(espClient);
 long lastMsg = 0;
-char msg[50];
+char msg[200];
 int value = 0;
 
 struct Config
@@ -74,11 +78,14 @@ struct Config
   char mqtt_topic_data1[40];
   uint32 mqtt_port_i;
 };
+Config config; // <- global configuration object
 
-char mqtt_msg[50];
+//void mqtt_callback(char *topic, byte *payload, unsigned int length);
+//PubSubClient mqttClient(config.mqtt_server, config.mqtt_port_i, mqtt_callback, espClient);
+
+char mqtt_msg[200];
 
 const char *filename = SPIFFS_COMFIG_FILE; // <- SD library uses 8.3 filenames
-Config config;                             // <- global configuration object
 
 //----------------------------------------------------------------------------------------------------------------------
 void mqtt_callback(char *topic, byte *payload, unsigned int length)
@@ -294,7 +301,7 @@ void setup()
   }
 
   //if you get here you have connected to the WiFi
-  Serial.println("connected...yeey :)");
+  Serial.println("WLAN connected...yeey :)");
 
   //read updated parameters
   strcpy(config.mqtt_server, custom_mqtt_server.getValue());
@@ -316,13 +323,19 @@ void setup()
   mqttClient.setCallback(mqtt_callback);
   mqttClient.connect(DEFAULT_MQTT_CLIENT, DEFAULT_MQTT_USER, DEFAULT_MQTT_PASSWD);
 
-  strlcpy(mqtt_msg, "hallo Welt", sizeof(mqtt_msg)); //
+  IBS_LIN_Setup(0);
+  IBS_LIN_Read(mqtt_msg);
+  Serial.begin(115200);
 
-  Serial.print("MQTT pub: "); //
+  mqttClient.publish(config.mqtt_topic_data1, "pre JSON");
+  Serial.print("MQTT pub: ");
   Serial.print(config.mqtt_topic_data1);
-  Serial.println(", ");
+  Serial.print(" : ");
   Serial.println(mqtt_msg);
   mqttClient.publish(config.mqtt_topic_data1, mqtt_msg);
+
+  mqttClient.publish(config.mqtt_topic_data1, "post JSON");
+  Serial.println("MQTT flush");
   mqttClient.flush();
 
   Serial.printf("Sleep deeply for %i seconds...", sleepSeconds);
