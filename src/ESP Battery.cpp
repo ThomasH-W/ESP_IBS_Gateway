@@ -40,7 +40,10 @@ Referenzen:
 #include <ESPAsyncWebServer.h>
 #include <ESPAsyncWiFiManager.h> //https://github.com/tzapu/WiFiManager
 #include <ArduinoJson.h>         //https://github.com/bblanchon/ArduinoJson
-#include <PubSubClient.h>        // https://github.com/knolleary/pubsubclient
+
+// need to enlagre packet size
+#define MQTT_MAX_PACKET_SIZE 250
+#include <PubSubClient.h> // https://github.com/knolleary/pubsubclient
 
 #ifdef PASSWORD_THOMAS
 #include "EspBattery_Thomas.h"
@@ -327,14 +330,14 @@ void setup()
   IBS_LIN_Read(mqtt_msg);
   Serial.begin(115200);
 
-  mqttClient.publish(config.mqtt_topic_data1, "pre JSON");
+  // mqttClient.publish(config.mqtt_topic_data1, "pre JSON");
   Serial.print("MQTT pub: ");
   Serial.print(config.mqtt_topic_data1);
   Serial.print(" : ");
   Serial.println(mqtt_msg);
   mqttClient.publish(config.mqtt_topic_data1, mqtt_msg);
 
-  mqttClient.publish(config.mqtt_topic_data1, "post JSON");
+  // mqttClient.publish(config.mqtt_topic_data1, "post JSON");
   Serial.println("MQTT flush");
   mqttClient.flush();
 
