@@ -1,3 +1,14 @@
+/*
+Basiert auf dem Code von Frank Schöniger
+     https://github.com/frankschoeniger/LIN_Interface
+
+File: IBS_Helly_200.cpp
+Date: 2019-09-13
+
+LIN Interface
+
+*/
+
 #include <arduino.h>
 #include <SoftwareSerial.h>
 #include <IBS_Hella_200.h>
@@ -9,6 +20,8 @@ int breakDuration = LIN_BREAK_BITS; // number of bits break signal
 int linCSPin = PIN_MPC_CS; // CS Pin
 int txPin1 = PIN_MPC_TX;   // TX Pin LIN serial
 int rxPin1 = PIN_MPC_RX;   // RX Pin LIN serial
+
+int IBS_SENSOR = DEFAULT_IBS_SENSOR;
 
 SoftwareSerial linSerial(rxPin1, txPin1); // RX, TX
 //SoftwareSerial linSerial(rxPin1, txPin1, false, 128);
@@ -33,7 +46,7 @@ byte LINChecksum(int nByte);
 byte addIDParity(byte linID);
 
 //-----------------------------------------------------------------------------------------------------------------
-void IBS_LIN_Setup(int IBS_Sensor)
+void IBS_LIN_Setup(int IBS_SensorNo)
 {
     pinMode(linCSPin, OUTPUT); // CS Signal LIN Tranceiver
     digitalWrite(linCSPin, HIGH);
@@ -43,6 +56,11 @@ void IBS_LIN_Setup(int IBS_Sensor)
     Serial.flush();
     Serial.end();
     delay(50);
+
+    if (IBS_SensorNo == 1)
+        IBS_SENSOR = 0;
+    else
+        IBS_SENSOR = 1;
 
     linSerial.begin(serSpeed);
     linSerialOn = 1;

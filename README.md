@@ -16,3 +16,4 @@ Weiterhin lassen sich die Nachrichten im MQTT-Broker abgreifen, um das System zu
 ToDo:
   Das Modul soll sich drei WLAN-Netzwerke merken.
   Damit könnten sich die Sensoren mit dem Heimnetzwerk verbinden und die Daten zu Hause ohne Bedieneinheit ausgelesen werden.
+

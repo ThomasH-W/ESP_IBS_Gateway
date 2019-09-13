@@ -326,7 +326,7 @@ void setup()
   mqttClient.setCallback(mqtt_callback);
   mqttClient.connect(DEFAULT_MQTT_CLIENT, DEFAULT_MQTT_USER, DEFAULT_MQTT_PASSWD);
 
-  IBS_LIN_Setup(0);
+  IBS_LIN_Setup(1);
   IBS_LIN_Read(mqtt_msg);
   Serial.begin(115200);
 

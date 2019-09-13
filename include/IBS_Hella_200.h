@@ -7,14 +7,14 @@
 #ifndef IBS_Hella_200_h
 #define IBS_Hella_200_h
 
-#define PIN_MPC_CS 2
+#define PIN_MPC_CS D2
 #define PIN_MPC_TX D6
 #define PIN_MPC_RX D7
 
 #define LIN_SERIAL_SPEED 19200
 #define LIN_BREAK_BITS 13
 
-#define IBS_SENSOR 0
+#define DEFAULT_IBS_SENSOR 0
 
 /*
   Der Code nutzt Sensor 1. Für Sensor 2 müssen einfach andere Frame ID´s genutzt werden. 
