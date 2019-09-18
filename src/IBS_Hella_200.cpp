@@ -2,8 +2,11 @@
 Basiert auf dem Code von Frank Schöniger
      https://github.com/frankschoeniger/LIN_Interface
 
-File: IBS_Helly_200.cpp
-Date: 2019-09-13
+Batterie Typ - code von breezer
+    https://www.kastenwagenforum.de/forum/threads/diy-hella-ibs-batteriecomputer.31724/page-2
+
+File: IBS_Hella_200.cpp
+Date: 2019-09-18
 
 LIN Interface
 
@@ -46,7 +49,7 @@ byte LINChecksum(int nByte);
 byte addIDParity(byte linID);
 
 //-----------------------------------------------------------------------------------------------------------------
-void IBS_LIN_Setup(int IBS_SensorNo)
+void IBS_LIN_Setup(byte BatTyp, byte cap)
 {
     pinMode(linCSPin, OUTPUT); // CS Signal LIN Tranceiver
     digitalWrite(linCSPin, HIGH);
@@ -57,17 +60,109 @@ void IBS_LIN_Setup(int IBS_SensorNo)
     Serial.end();
     delay(50);
 
-    if (IBS_SensorNo == 1)
-        IBS_SENSOR = 0;
-    else
-        IBS_SENSOR = 1;
+    IBS_LIN_setNomCap(cap);    //Normkapazität parametrieren (7AH)
+    IBS_LIN_setBatTyp(BatTyp); //Batterietyp setzen
 
     linSerial.begin(serSpeed);
     linSerialOn = 1;
-}
+} // end of function
 
 //-----------------------------------------------------------------------------------------------------------------
-void IBS_LIN_Read(char *json_message)
+void IBS_LIN_setNomCap(byte cap)
+{
+
+    byte i = 0;
+
+    LinMessage[0] = 0x00;
+    LinMessage[1] = 0x02;
+    LinMessage[2] = 0x03;
+    LinMessage[3] = 0xb5;
+    LinMessage[4] = 0x39;
+    LinMessage[5] = cap;
+    LinMessage[6] = 0xff;
+    LinMessage[7] = 0xff;
+    LinMessage[8] = 0xff;
+
+    byte cksum = LINChecksum(9);
+
+    LinMessage[0] = 0x3c;
+
+    serialBreak();
+    linSerial.write(0x55); // Sync
+    while (i < 9)
+    {
+        linSerial.write(LinMessage, sizeof(LinMessage)); // Message (array from 1..8)
+        i++;
+    }
+    linSerial.write(cksum);
+    linSerial.flush();
+} // end of function
+
+//-----------------------------------------------------------------------------------------------------------------
+void IBS_LIN_setBatTyp(byte BatTyp)
+{
+
+    byte i = 0;
+
+    LinMessage[0] = 0x3c;
+    LinMessage[1] = 0x02;
+    LinMessage[2] = 0x03;
+    LinMessage[3] = 0xb5;
+    LinMessage[4] = 0x3a;
+
+    LinMessage[6] = 0xff;
+    LinMessage[7] = 0xff;
+    LinMessage[8] = 0xff;
+
+    switch (BatTyp)
+    {
+
+    case BAT_TYPE_STARTER:
+        //3c 02 03 b5 3a 0a ff ff ff 01
+        LinMessage[5] = 0x0a;
+        serialBreak();
+        linSerial.write(0x55); // Sync
+        while (i < 9)
+        {
+            linSerial.write(LinMessage, sizeof(LinMessage)); // Message (array from 1..8)
+            i++;
+        }
+        linSerial.write(0x01);
+        linSerial.flush();
+        break;
+
+    case BAT_TYPE_GEL:
+        //3c 02 03 b5 3a 14 ff ff ff f6
+        LinMessage[5] = 0x14;
+        serialBreak();
+        linSerial.write(0x55); // Sync
+        while (i < 9)
+        {
+            linSerial.write(LinMessage, sizeof(LinMessage)); // Message (array from 1..8)
+            i++;
+        }
+        linSerial.write(0xf6);
+        linSerial.flush();
+        break;
+
+    case BAT_TYPE_AGM:
+        //3c 02 03 b5 3a 1e ff ff ff ec
+        LinMessage[5] = 0x1e;
+        serialBreak();
+        linSerial.write(0x55); // Sync
+        while (i < 9)
+        {
+            linSerial.write(LinMessage, sizeof(LinMessage)); // Message (array from 1..8)
+            i++;
+        }
+        linSerial.write(0xec);
+        linSerial.flush();
+        break;
+    }
+} // end of function
+
+//-----------------------------------------------------------------------------------------------------------------
+void IBS_LIN_Read(char *json_message, int IBS_SensorNo)
 {
     int soc;
     int soh;
@@ -76,6 +171,11 @@ void IBS_LIN_Read(char *json_message)
     float Btemp;
     float AvCap;
     int remTime = 0;
+
+    if (IBS_SensorNo == 1)
+        IBS_SENSOR = 0;
+    else
+        IBS_SENSOR = 1;
 
     LinMessageA[0] = 0x01;
     while (bitRead(LinMessageA[0], 0) > 0)

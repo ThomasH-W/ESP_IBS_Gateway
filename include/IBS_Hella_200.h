@@ -16,6 +16,10 @@
 
 #define DEFAULT_IBS_SENSOR 0
 
+#define BAT_TYPE_STARTER 1 //BatTyps
+#define BAT_TYPE_GEL 2
+#define BAT_TYPE_AGM 3
+
 /*
   Der Code nutzt Sensor 1. Für Sensor 2 müssen einfach andere Frame ID´s genutzt werden. 
   Hier ist die entsprechende Übersetzungsliste:
@@ -32,7 +36,9 @@
 #define IBS_FRM_SOx 5 // 0x2B
 #define IBS_FRM_CAP 6 // 0x2C
 
-void IBS_LIN_Setup(int IBS_Sensor);
-void IBS_LIN_Read(char *json_message);
+void IBS_LIN_Setup(byte BatTyp, byte cap);
+void IBS_LIN_Read(char *json_message, int IBS_SensorNo);
+void IBS_LIN_setNomCap(byte cap);
+void IBS_LIN_setBatTyp(byte BatTyp);
 
 #endif

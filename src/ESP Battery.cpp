@@ -330,8 +330,8 @@ void setup()
   mqttClient.setCallback(mqtt_callback);
   mqttClient.connect(DEFAULT_MQTT_CLIENT, DEFAULT_MQTT_USER, DEFAULT_MQTT_PASSWD);
 
-  IBS_LIN_Setup(1);
-  IBS_LIN_Read(mqtt_msg);
+  IBS_LIN_Setup(BAT_TYPE_AGM, 44); // void IBS_LIN_Setup(byte BatTyp, byte cap);
+  IBS_LIN_Read(mqtt_msg, 1);       // void IBS_LIN_Read(char *json_message, int IBS_SensorNo)
   Serial.begin(115200);
 
   // mqttClient.publish(config.mqtt_topic_data1, "pre JSON");
