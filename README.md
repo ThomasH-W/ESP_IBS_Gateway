@@ -18,3 +18,5 @@ Hinweis: Aufgrund der Länge der MQTT Nachricht, muss in PubSubClient.h die pack
 ToDo:
   Das Modul soll sich drei WLAN-Netzwerke merken.
   Damit könnten sich die Sensoren mit dem Heimnetzwerk verbinden und die Daten zu Hause ohne Bedieneinheit ausgelesen werden.
+
+https://hoeser-medien.de/2019/09/esp-hella-ibs-200-gateway-lin-mqtt/
